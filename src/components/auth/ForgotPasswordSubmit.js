@@ -3,10 +3,9 @@ import FormErrors from "../FormErrors";
 import Validate from "../util/Validation";
 import { Auth } from "aws-amplify";
 
-class Register extends Component {
-  //state variables for form inputs and errors
+class ForgotPasswordSubmit extends Component {
   state = {
-    username: "",
+    verificationcode: "",
     email: "",
     password: "",
     confirmpassword: "",
@@ -21,7 +20,6 @@ class Register extends Component {
     this.setState({
       errors: {
         blankfield: false,
-        matchedpassword: false,
         cognito: null
       }
     });
@@ -40,23 +38,17 @@ class Register extends Component {
       });
     } else {
       //Integrate Cognito here on valid form submission
-      const { username, email, password } = this.state;
       try {
-        const signUpResponse = await Auth.signUp({
-          username,
-          password,
-          attributes: {
-            email: email
-          }
-        });
-        console.log(signUpResponse);
-        //redirect to Welcome page if registration is successful
-        this.props.history.push("/welcome");
+        await Auth.forgotPasswordSubmit(
+          this.state.email,
+          this.state.verificationcode,
+          this.state.password
+        );
+        this.props.history.push("/changepasswordconfirmation");
       } catch (error) {
-        //check if error has a message property, if not add one.
         let err = null;
         !error.message ? (err = { message: error }) : (err = error);
-        //set form error as a cognito error
+
         this.setState({
           errors: {
             ...this.state.errors,
@@ -78,21 +70,22 @@ class Register extends Component {
     return (
       <section className="section auth">
         <div className="container">
-          <h1>Register</h1>
+          <h1>Forgot Password</h1>
           <FormErrors formerrors={this.state.errors} />
+
           <form onSubmit={this.handleSubmit}>
             <div className="field">
               <p className="control has-icons-left">
                 <input
                   className="input"
                   type="text"
-                  id="username"
-                  placeholder="Enter username"
-                  value={this.state.username}
+                  id="verificationcode"
+                  placeholder="Enter your verification code"
+                  value={this.state.verificationcode}
                   onChange={this.onInputChange}
                 />
                 <span className="icon is-small is-left">
-                  <i className="fas fa-user"></i>
+                  <i className="fas fa-key"></i>
                 </span>
               </p>
             </div>
@@ -100,9 +93,9 @@ class Register extends Component {
               <p className="control has-icons-left">
                 <input
                   className="input"
-                  type="email"
+                  type="text"
                   id="email"
-                  placeholder="Enter email"
+                  placeholder="Enter your email"
                   value={this.state.email}
                   onChange={this.onInputChange}
                 />
@@ -143,12 +136,7 @@ class Register extends Component {
             </div>
             <div className="field">
               <p className="control">
-                <a href="/forgotpassword">Forgot password?</a>
-              </p>
-            </div>
-            <div className="field">
-              <p className="control">
-                <button className="button is-success">Register</button>
+                <button className="button is-success">Change Password</button>
               </p>
             </div>
           </form>
@@ -157,4 +145,5 @@ class Register extends Component {
     );
   }
 }
-export default Register;
+
+export default ForgotPasswordSubmit;
